@@ -38,3 +38,6 @@ Session.vim
 *~
 # auto-generated tag files
 tags
+
+# generated files
+/assets/generated.scad

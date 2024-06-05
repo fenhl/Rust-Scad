@@ -7,6 +7,19 @@ pub trait ScadType {
     fn get_code(&self) -> String;
 }
 
+impl ScadType for na::Vector4<f32> {
+    fn get_code(&self) -> String {
+        String::from("[")
+            + &self.x.get_code()
+            + ","
+            + &self.y.get_code()
+            + ","
+            + &self.z.get_code()
+            + ","
+            + &self.w.get_code()
+            + "]"
+    }
+}
 impl ScadType for na::Vector3<f32> {
     fn get_code(&self) -> String {
         String::from("[")

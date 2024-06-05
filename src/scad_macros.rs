@@ -50,6 +50,14 @@ macro_rules! scad {
 
 /**
   Utility function for creating nalgebra vectors without having
+  to write `na::Vector4::new(x,y,z,w)`
+*/
+pub const fn vec4(x: f32, y: f32, z: f32, w: f32) -> na::Vector4<f32> {
+    na::Vector4::new(x, y, z, w)
+}
+
+/**
+  Utility function for creating nalgebra vectors without having
   to write `na::Vector3::new(x,y,z)`
 */
 pub const fn vec3(x: f32, y: f32, z: f32) -> na::Vector3<f32> {

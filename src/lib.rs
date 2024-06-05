@@ -95,8 +95,8 @@
   ### Vectors
   The most common parameter is a vector. This library uses the nalgebra crate for vectors
   but writing `na::Vector3::new(x, y, z)` each time you want a vector is tedious which is
-  why the library contains the functions `vec3(x, y, z)` and `vec2(x, y)`. They are simply
-  functions that call the equivalent nalgebra constructor.
+  why the library contains the functions `vec4(x, y, z, w)`, `vec3(x, y, z)`, and
+  `vec2(x, y)`. They are simply functions that call the equivalent nalgebra constructor.
 
   ### Circle radii and diameters.
   Just like regular OpenSCAD, you can create round objects by either specifying the diameter

@@ -180,6 +180,7 @@ pub enum ScadElement {
 
     //Object stuff
     Cube(na::Vector3<f32>),
+    CenteredCube(na::Vector3<f32>),
     Cylinder(f32, CircleType),
     Sphere(CircleType),
     Cone(f32, CircleType, CircleType),
@@ -199,6 +200,7 @@ pub enum ScadElement {
     Scale2d(na::Vector2<f32>),
 
     Color(na::Vector3<f32>),
+    ColorAlpha(na::Vector4<f32>),
     NamedColor(String),
 }
 
@@ -225,6 +227,7 @@ impl ScadElement {
 
             //Primitive objects
             ScadElement::Cube(value) => String::from("cube(") + &value.get_code() + ")",
+            ScadElement::CenteredCube(value) => String::from("cube(") + &value.get_code() + ", center = true)",
             ScadElement::Cylinder(height, width) => {
                 let width_str = match width {
                     CircleType::Radius(val) => String::from("r=") + &val.get_code(),
@@ -304,6 +307,15 @@ impl ScadElement {
                 assert!(value.x >= 0. && value.x <= 1.);
                 assert!(value.y >= 0. && value.y <= 1.);
                 assert!(value.z >= 0. && value.z <= 1.);
+
+                String::from("color(") + &value.get_code() + ")"
+            }
+            ScadElement::ColorAlpha(value) => {
+                //Ensure that this is a valid color
+                assert!(value.x >= 0. && value.x <= 1.);
+                assert!(value.y >= 0. && value.y <= 1.);
+                assert!(value.z >= 0. && value.z <= 1.);
+                assert!(value.w >= 0. && value.w <= 1.);
 
                 String::from("color(") + &value.get_code() + ")"
             }
