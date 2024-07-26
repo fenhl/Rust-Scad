@@ -11,7 +11,7 @@ readme = "Readme.md"
 edition = "2018"
 
 [dependencies]
-nalgebra= "0.27.1"
+nalgebra = "0.33"
 
 [dev-dependencies]
 thiserror = "1.0.61"
