@@ -1,7 +1,5 @@
 use crate::scad_object::*;
 use crate::scad_type::ScadType;
-use std::fs::File;
-use std::io::prelude::*;
 use std::path::Path;
 use std::string::String;
 use std::vec::Vec;
@@ -62,30 +60,9 @@ impl ScadFile {
 
       * `path`: The path to the file where we want to write relative to the current
         working directory.
-
-      ## Returns
-      The function will return false and print a message to the console if
-      writing fails.
     */
-    pub fn write_to_file(&self, path: String) -> bool {
-        //Writing the result to file
-        let path = Path::new(&path);
-
-        // Open a file in write-only mode, returns `io::Result<File>`
-        let mut file = match File::create(&path) {
-            Err(_) => {
-                println!("Couldn't open file for writing");
-                return false;
-            }
-            Ok(file) => file,
-        };
-
-        if file.write(self.get_code().as_bytes()).is_err() {
-            println!("Failed to write to output file");
-            return false;
-        };
-
-        true
+    pub fn write_to_file(&self, path: impl AsRef<Path>) -> std::io::Result<()> {
+        std::fs::write(path, self.get_code())
     }
 }
 
@@ -102,6 +79,7 @@ mod file_tests {
     use super::*;
     use std::fs;
     use std::fs::File;
+    use std::io::prelude::*;
 
     #[test]
     fn detail_test() {
@@ -126,7 +104,7 @@ mod file_tests {
 
         sfile.detail = 30;
 
-        let write_success = sfile.write_to_file(String::from("test.scad"));
+        sfile.write_to_file("test.scad").unwrap();
 
         let mut correct_content = false;
         //Read the content of the file
@@ -157,7 +135,6 @@ mod file_tests {
             Err(_) => {}
         };
 
-        assert!(write_success);
         assert!(correct_content);
     }
 }

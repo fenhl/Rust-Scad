@@ -1,13 +1,7 @@
 use scad::*;
 
-#[derive(Debug, thiserror::Error)]
-enum Error {
-    #[error("saving OpenSCAD file failed")]
-    Save,
-}
-
 #[wheel::main]
-fn main() -> Result<(), Error> {
+fn main() -> std::io::Result<()> {
     let mut scad_file = ScadFile::new();
     scad_file.add_object(scad!(Union; {
         // wall
@@ -33,8 +27,6 @@ fn main() -> Result<(), Error> {
         scad!(Translate(vec3(6.85, 0.075, 1.0)); scad!(Color(vec3(1.0, 1.0, 1.0)); scad!(Sphere(Radius(0.05))))),
     }));
     //TODO this function returns false and prints to console if saving fails, which is not very idiomatic. Change to have it return a Result instead?
-    if !scad_file.write_to_file(format!("assets/generated.scad")) {
-        return Err(Error::Save)
-    }
+    scad_file.write_to_file("assets/generated.scad")?;
     Ok(())
 }
