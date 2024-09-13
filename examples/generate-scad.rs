@@ -26,7 +26,6 @@ fn main() -> std::io::Result<()> {
         scad!(Translate(vec3(6.85, -0.035, 1.0)); scad!(Color(vec3(1.0, 1.0, 1.0)); scad!(Sphere(Radius(0.05))))),
         scad!(Translate(vec3(6.85, 0.075, 1.0)); scad!(Color(vec3(1.0, 1.0, 1.0)); scad!(Sphere(Radius(0.05))))),
     }));
-    //TODO this function returns false and prints to console if saving fails, which is not very idiomatic. Change to have it return a Result instead?
     scad_file.write_to_file("assets/generated.scad")?;
     Ok(())
 }
