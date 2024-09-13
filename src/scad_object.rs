@@ -1,6 +1,7 @@
 use crate::scad_element::*;
 use crate::scad_type::ScadType;
 
+use std::fmt;
 use std::vec::*;
 
 /**
@@ -89,34 +90,29 @@ impl ScadType for ScadObject {
       the element is returned first, followed by the code for each child surrounded
       by `{}` and indented 1 tab character.
     */
-    fn get_code(&self) -> String {
-        let mut result: String;
-
-        //Get the code for the current element
-        result = self.element.clone().get_code();
-
+    fn fmt_code(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         if self.important {
-            result = String::from("!") + &result;
+            write!(f, "!")?;
         }
 
+        //Get the code for the current element
+        self.element.fmt_code(f)?;
+
         //Adding the code for all children, or ; if none exist
-        result = result
-            + &(match self.children.len() {
-                0 => String::from(";"),
-                _ => {
-                    let mut child_code = String::from("\n{\n");
-                    for stmt in &self.children {
-                        //Add the children indented one line
-                        child_code = child_code + "\t" + &(stmt.get_code().replace("\n", "\n\t"));
-                        child_code += "\n";
-                    }
+        if self.children.is_empty() {
+            write!(f, ";")?;
+        } else {
+            writeln!(f, "\n{{")?;
+            for stmt in &self.children {
+                //Add the children indented one line
+                writeln!(f, "\t{}", stmt.get_code().replace("\n", "\n\t"))?;
+            }
 
-                    //Add the final bracket and 'return' the result
-                    child_code + "}"
-                }
-            });
+            //Add the final bracket and 'return' the result
+            write!(f, "}}")?;
+        }
 
-        result
+        Ok(())
     }
 }
 

@@ -1,4 +1,5 @@
 use nalgebra as na;
+use std::fmt;
 use std::string::*;
 use std::vec::Vec;
 
@@ -40,17 +41,18 @@ impl Default for LinExtrudeParams {
 }
 
 impl ScadType for LinExtrudeParams {
-    fn get_code(&self) -> String {
-        String::from("height=")
-            + &self.height.get_code()
-            + ",center="
-            + &self.center.get_code()
-            + ",convexity="
-            + &self.convexity.get_code()
-            + ",twist="
-            + &self.twist.get_code()
-            + ",slices="
-            + &self.slices.get_code()
+    fn fmt_code(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "height=")?;
+        self.height.fmt_code(f)?;
+        write!(f, ",center=")?;
+        self.center.fmt_code(f)?;
+        write!(f, ",convexity=")?;
+        self.convexity.fmt_code(f)?;
+        write!(f, ",twist=")?;
+        self.twist.fmt_code(f)?;
+        write!(f, ",slices=")?;
+        self.slices.fmt_code(f)?;
+        Ok(())
     }
 }
 
@@ -73,8 +75,12 @@ impl Default for RotateExtrudeParams {
 }
 
 impl ScadType for RotateExtrudeParams {
-    fn get_code(&self) -> String {
-        String::from("angle=") + &self.angle.get_code() + ",convexity=" + &self.convexity.get_code()
+    fn fmt_code(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "angle=")?;
+        self.angle.fmt_code(f)?;
+        write!(f, ",convexity=")?;
+        self.convexity.fmt_code(f)?;
+        Ok(())
     }
 }
 /////////////////////////////////////////////////////////////////////////////
@@ -88,12 +94,13 @@ enum PolygonPathType {
     MultipleVectors(Vec<Vec<usize>>),
 }
 impl ScadType for PolygonPathType {
-    fn get_code(&self) -> String {
+    fn fmt_code(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self {
-            PolygonPathType::Default => String::from("undef"),
-            PolygonPathType::SingleVector(ref val) => val.get_code(),
-            PolygonPathType::MultipleVectors(ref val) => val.get_code(),
+            PolygonPathType::Default => write!(f, "undef")?,
+            PolygonPathType::SingleVector(ref val) => val.fmt_code(f)?,
+            PolygonPathType::MultipleVectors(ref val) => val.fmt_code(f)?,
         }
+        Ok(())
     }
 }
 
@@ -130,13 +137,14 @@ impl PolygonParameters {
 }
 
 impl ScadType for PolygonParameters {
-    fn get_code(&self) -> String {
-        String::from("points=")
-            + &self.points.get_code()
-            + ",paths="
-            + &self.path.get_code()
-            + ",convexity="
-            + &self.convexity.get_code()
+    fn fmt_code(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "points=")?;
+        self.points.fmt_code(f)?;
+        write!(f, ",paths=")?;
+        self.path.fmt_code(f)?;
+        write!(f, ",convexity=")?;
+        self.convexity.fmt_code(f)?;
+        Ok(())
     }
 }
 /////////////////////////////////////////////////////////////////////////////
@@ -147,11 +155,18 @@ pub enum OffsetType {
 }
 
 impl ScadType for OffsetType {
-    fn get_code(&self) -> String {
+    fn fmt_code(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self {
-            OffsetType::Delta(val) => String::from("delta=") + &val.get_code(),
-            OffsetType::Radius(val) => String::from("r=") + &val.get_code(),
+            OffsetType::Delta(val) => {
+                write!(f, "delta=")?;
+                val.fmt_code(f)?;
+            }
+            OffsetType::Radius(val) => {
+                write!(f, "r=")?;
+                val.fmt_code(f)?;
+            }
         }
+        Ok(())
     }
 }
 /////////////////////////////////////////////////////////////////////////////
@@ -205,105 +220,192 @@ pub enum ScadElement {
     NamedColor(String),
 }
 
-impl ScadElement {
+impl ScadType for ScadElement {
     /// Returns scad code for each of the elements
-    pub fn get_code(self) -> String {
+    fn fmt_code(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             //Transformation things
-            ScadElement::Translate(value) => String::from("translate(") + &value.get_code() + ")",
-            ScadElement::Scale(value) => String::from("scale(") + &value.get_code() + ")",
+            ScadElement::Translate(value) => {
+                write!(f, "translate(")?;
+                value.fmt_code(f)?;
+                write!(f, ")")?;
+            }
+            ScadElement::Scale(value) => {
+                write!(f, "scale(")?;
+                value.fmt_code(f)?;
+                write!(f, ")")?;
+            }
             ScadElement::Resize(vector, auto) => {
-                String::from("resize(") + &vector.get_code() + ", auto = " + &auto.get_code() + ")"
+                write!(f, "resize(")?;
+                vector.fmt_code(f)?;
+                write!(f, ", auto = ")?;
+                auto.fmt_code(f)?;
+                write!(f, ")")?;
             }
             ScadElement::Rotate(angle, vector) => {
-                String::from("rotate(") + &angle.get_code() + "," + &vector.get_code() + ")"
+                write!(f, "rotate(")?;
+                angle.fmt_code(f)?;
+                write!(f, ",")?;
+                vector.fmt_code(f)?;
+                write!(f, ")")?;
             }
             ScadElement::RotateVec(vector) => {
-                String::from("rotate(") + &vector.get_code() + ")"
+                write!(f, "rotate(")?;
+                vector.fmt_code(f)?;
+                write!(f, ")")?;
             }
-            ScadElement::Mirror(vector) => String::from("mirror(") + &vector.get_code() + ")",
+            ScadElement::Mirror(vector) => {
+                write!(f, "mirror(")?;
+                vector.fmt_code(f)?;
+                write!(f, ")")?;
+            }
             ScadElement::LinearExtrude(params) => {
-                String::from("linear_extrude(") + &params.get_code() + ")"
+                write!(f, "linear_extrude(")?;
+                params.fmt_code(f)?;
+                write!(f, ")")?;
             }
             ScadElement::RotateExtrude(params) => {
-                String::from("rotate_extrude(") + &params.get_code() + ")"
+                write!(f, "rotate_extrude(")?;
+                params.fmt_code(f)?;
+                write!(f, ")")?;
             }
 
             //Primitive objects
-            ScadElement::Cube(value) => String::from("cube(") + &value.get_code() + ")",
-            ScadElement::CenteredCube(value) => String::from("cube(") + &value.get_code() + ", center = true)",
+            ScadElement::Cube(value) => {
+                write!(f, "cube(")?;
+                value.fmt_code(f)?;
+                write!(f, ")")?;
+            }
+            ScadElement::CenteredCube(value) => {
+                write!(f, "cube(")?;
+                value.fmt_code(f)?;
+                write!(f, ", center = true)")?;
+            }
             ScadElement::Cylinder(height, width) => {
-                let width_str = match width {
-                    CircleType::Radius(val) => String::from("r=") + &val.get_code(),
-                    CircleType::Diameter(val) => String::from("d=") + &val.get_code(),
-                };
-
-                String::from("cylinder(h=") + &height.get_code() + "," + &width_str + ")"
+                write!(f, "cylinder(h=")?;
+                height.fmt_code(f)?;
+                write!(f, ",")?;
+                match width {
+                    CircleType::Radius(val) => {
+                        write!(f, "r=")?;
+                        val.fmt_code(f)?;
+                    }
+                    CircleType::Diameter(val) => {
+                        write!(f, "d=")?;
+                        val.fmt_code(f)?;
+                    }
+                }
+                write!(f, ")")?;
             }
             ScadElement::Sphere(size) => {
-                let size_str = match size {
-                    CircleType::Radius(val) => String::from("r=") + &val.get_code(),
-                    CircleType::Diameter(val) => String::from("d=") + &val.get_code(),
-                };
-
-                String::from("sphere(") + &size_str + ")"
+                write!(f, "sphere(")?;
+                match size {
+                    CircleType::Radius(val) => {
+                        write!(f, "r=")?;
+                        val.fmt_code(f)?;
+                    }
+                    CircleType::Diameter(val) => {
+                        write!(f, "d=")?;
+                        val.fmt_code(f)?;
+                    }
+                }
+                write!(f, ")")?;
             }
             ScadElement::Cone(height, size1, size2) => {
-                let size1_str = match size1 {
-                    CircleType::Radius(val) => String::from("r1=") + &val.get_code(),
-                    CircleType::Diameter(val) => String::from("d1=") + &val.get_code(),
-                };
-                let size2_str = match size2 {
-                    CircleType::Radius(val) => String::from("r2=") + &val.get_code(),
-                    CircleType::Diameter(val) => String::from("d2=") + &val.get_code(),
-                };
-
-                String::from("cylinder(h=")
-                    + &height.get_code()
-                    + ","
-                    + &size1_str
-                    + ","
-                    + &size2_str
-                    + ")"
+                write!(f, "cylinder(h=")?;
+                height.fmt_code(f)?;
+                write!(f, ",")?;
+                match size1 {
+                    CircleType::Radius(val) => {
+                        write!(f, "r1=")?;
+                        val.fmt_code(f)?;
+                    }
+                    CircleType::Diameter(val) => {
+                        write!(f, "d1=")?;
+                        val.fmt_code(f)?;
+                    }
+                }
+                write!(f, ",")?;
+                match size2 {
+                    CircleType::Radius(val) => {
+                        write!(f, "r2=")?;
+                        val.fmt_code(f)?;
+                    }
+                    CircleType::Diameter(val) => {
+                        write!(f, "d2=")?;
+                        val.fmt_code(f)?;
+                    }
+                }
+                write!(f, ")")?;
             }
 
             ScadElement::Polyhedron(points, faces) => {
-                String::from("polyhedron(points=")
-                    + &points.get_code()
-                    + ",faces="
-                    + &faces.get_code()
-                    + ")"
+                write!(f, "polyhedron(points=")?;
+                points.fmt_code(f)?;
+                write!(f, ",faces=")?;
+                faces.fmt_code(f)?;
+                write!(f, ")")?;
             }
-            ScadElement::Import(path) => String::from("import(") + &path.get_code() + ")",
+            ScadElement::Import(path) => {
+                write!(f, "import(")?;
+                path.fmt_code(f)?;
+                write!(f, ")")?;
+            }
 
             //primitive 2d objects
-            ScadElement::Square(value) => String::from("square(") + &value.get_code() + ")",
+            ScadElement::Square(value) => {
+                write!(f, "square(")?;
+                value.fmt_code(f)?;
+                write!(f, ")")?;
+            }
             ScadElement::Circle(circle_type) => {
-                let size = match circle_type {
-                    CircleType::Radius(val) => String::from("r=") + &val.get_code(),
-                    CircleType::Diameter(val) => String::from("d=") + &val.get_code(),
-                };
-
-                String::from("circle(") + &size + ")"
+                write!(f, "circle(")?;
+                match circle_type {
+                    CircleType::Radius(val) => {
+                        write!(f, "r=")?;
+                        val.fmt_code(f)?;
+                    }
+                    CircleType::Diameter(val) => {
+                        write!(f, "d=")?;
+                        val.fmt_code(f)?;
+                    }
+                }
+                write!(f, ")")?;
             }
 
             ScadElement::Polygon(parameters) => {
-                String::from("polygon(") + &parameters.get_code() + ")"
+                write!(f, "polygon(")?;
+                parameters.fmt_code(f)?;
+                write!(f, ")")?;
             }
             ScadElement::Offset(offset_type, chamfer) => {
-                String::from("offset(")
-                    + &offset_type.get_code()
-                    + ",chamfer="
-                    + &chamfer.get_code()
-                    + ")"
+                write!(f, "offset(")?;
+                offset_type.fmt_code(f)?;
+                write!(f, ",chamfer=")?;
+                chamfer.fmt_code(f)?;
+                write!(f, ")")?;
             }
 
-            ScadElement::Rotate2d(angle) => String::from("rotate(") + &angle.get_code() + ")",
-            ScadElement::Translate2d(position) => {
-                String::from("translate(") + &position.get_code() + ")"
+            ScadElement::Rotate2d(angle) => {
+                write!(f, "rotate(")?;
+                angle.fmt_code(f)?;
+                write!(f, ")")?;
             }
-            ScadElement::Scale2d(scale) => String::from("scale(") + &scale.get_code() + ")",
-            ScadElement::Projection(cut) => format!("projection(cut={})", cut),
+            ScadElement::Translate2d(position) => {
+                write!(f, "translate(")?;
+                position.fmt_code(f)?;
+                write!(f, ")")?;
+            }
+            ScadElement::Scale2d(scale) => {
+                write!(f, "scale(")?;
+                scale.fmt_code(f)?;
+                write!(f, ")")?;
+            }
+            ScadElement::Projection(cut) => {
+                write!(f, "projection(cut=")?;
+                cut.fmt_code(f)?;
+                write!(f, ")")?;
+            }
 
             //Colors
             ScadElement::Color(value) => {
@@ -312,7 +414,9 @@ impl ScadElement {
                 assert!(value.y >= 0. && value.y <= 1.);
                 assert!(value.z >= 0. && value.z <= 1.);
 
-                String::from("color(") + &value.get_code() + ")"
+                write!(f, "color(")?;
+                value.fmt_code(f)?;
+                write!(f, ")")?;
             }
             ScadElement::ColorAlpha(value) => {
                 //Ensure that this is a valid color
@@ -321,17 +425,24 @@ impl ScadElement {
                 assert!(value.z >= 0. && value.z <= 1.);
                 assert!(value.w >= 0. && value.w <= 1.);
 
-                String::from("color(") + &value.get_code() + ")"
+                write!(f, "color(")?;
+                value.fmt_code(f)?;
+                write!(f, ")")?;
             }
-            ScadElement::NamedColor(value) => String::from("color(") + &value.get_code() + ")",
+            ScadElement::NamedColor(value) => {
+                write!(f, "color(")?;
+                value.fmt_code(f)?;
+                write!(f,  ")")?;
+            }
 
             //Combination constructs
-            ScadElement::Difference => String::from("difference()"),
-            ScadElement::Union => String::from("union()"),
-            ScadElement::Hull => String::from("hull()"),
-            ScadElement::Minkowski => String::from("minkowski()"),
-            ScadElement::Intersection => String::from("intersection()"),
+            ScadElement::Difference => write!(f, "difference()")?,
+            ScadElement::Union => write!(f, "union()")?,
+            ScadElement::Hull => write!(f, "hull()")?,
+            ScadElement::Minkowski => write!(f, "minkowski()")?,
+            ScadElement::Intersection => write!(f, "intersection()")?,
         }
+        Ok(())
     }
 }
 /////////////////////////////////////////////////////////////////////////////
